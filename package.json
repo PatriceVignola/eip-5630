@@ -1,8 +1,12 @@
 {
+  "name": "eip-5630",
+  "version": "1.0.0",
+  "description": "A sample implementation of EIP-5630",
   "scripts": {
     "test": "ts-mocha test/**/*.ts",
     "format": "npx prettier --write ."
   },
+  "author": "Patrice Vignola",
   "dependencies": {
     "eciesjs": "^0.3.15",
     "keccak256": "1.0.6",
