@@ -9,22 +9,37 @@ import { decrypt } from "eciesjs";
 
 // Implements the X9.63 key derivation function as described in
 // https://www.secg.org/sec1-v2.pdf#subsubsection.3.6.1
-function X963KDF(publicKey: Buffer, secretSigningKey: Buffer): Buffer {
+function X963KDF(address: Uint8Array, secretSigningKey: Uint8Array): Buffer {
   const counter = Buffer.allocUnsafe(4);
   counter.writeUInt32BE(1, 0);
-  const keyData = Buffer.concat([secretSigningKey, counter, publicKey]);
+  const keyData = Buffer.concat([secretSigningKey, counter, address]);
   return keccak256(keyData);
+}
+
+function publicKeyToAddress(publicKeyBuffer: Uint8Array): string {
+  // Remove the first byte (0x04), which is the type byte for an Ethereum
+  // address
+  const address =
+    "0x" +
+    keccak256(Buffer.from(publicKeyBuffer.slice(1)))
+      .subarray(-20)
+      .toString("hex");
+  return address;
+}
+
+function getSecretDecryptionKey(privateKey: string): Buffer {
+  const privateKeyBuffer = Buffer.from(privateKey, "hex");
+  const publicKeyBuffer = secp256k1.publicKeyCreate(privateKeyBuffer, false);
+  const address = publicKeyToAddress(publicKeyBuffer);
+  const addressBuffer = Buffer.from(address, "hex");
+  const secretDecryptionKey = X963KDF(addressBuffer, privateKeyBuffer);
+  return secretDecryptionKey;
 }
 
 // Implements the eth_getEncryptionPublicKey function as described in
 // https://eips.ethereum.org/EIPS/eip-5630
-export function eth_getEncryptionPublicKey(
-  publicKey: string,
-  privateKey: string
-) {
-  const publicKeyBuffer = Buffer.from(publicKey, "hex");
-  const privateKeyBuffer = Buffer.from(privateKey, "hex");
-  const secretDecryptionKey = X963KDF(publicKeyBuffer, privateKeyBuffer);
+export function eth_getEncryptionPublicKey(privateKey: string) {
+  const secretDecryptionKey = getSecretDecryptionKey(privateKey);
   const publicDecryptionKey = Buffer.from(
     secp256k1.publicKeyCreate(secretDecryptionKey)
   );
@@ -33,14 +48,8 @@ export function eth_getEncryptionPublicKey(
 
 // Implements the eth_decrypt function as described in
 // https://eips.ethereum.org/EIPS/eip-5630
-export function eth_decrypt(
-  publicKey: string,
-  privateKey: string,
-  encryptedMessage: Buffer
-) {
-  const publicKeyBuffer = Buffer.from(publicKey, "hex");
-  const privateKeyBuffer = Buffer.from(privateKey, "hex");
-  const secretDecryptionKey = X963KDF(publicKeyBuffer, privateKeyBuffer);
+export function eth_decrypt(privateKey: string, encryptedMessage: Buffer) {
+  const secretDecryptionKey = getSecretDecryptionKey(privateKey);
   const decryptedMessage = decrypt(secretDecryptionKey, encryptedMessage);
   return decryptedMessage.toString("utf-8");
 }
