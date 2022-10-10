@@ -1,5 +1,5 @@
-const expect = require("chai").expect;
-import { eth_getEncryptionPublicKey, eth_decrypt } from "../eip5630";
+import { expect } from "chai";
+import { eth_getEncryptionPublicKey, eth_decrypt } from "../eip5630.js";
 import { encrypt } from "eciesjs";
 
 describe("eth_getEncryptionPublicKey", function () {
