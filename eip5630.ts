@@ -38,7 +38,7 @@ function getSecretDecryptionKey(privateKey: string): Buffer {
 
 // Implements the eth_getEncryptionPublicKey function as described in
 // https://eips.ethereum.org/EIPS/eip-5630
-export function eth_getEncryptionPublicKey(privateKey: string) {
+export function eth_getEncryptionPublicKey(privateKey: string): string {
   const secretDecryptionKey = getSecretDecryptionKey(privateKey);
   const publicDecryptionKey = Buffer.from(
     secp256k1.publicKeyCreate(secretDecryptionKey)
@@ -48,8 +48,11 @@ export function eth_getEncryptionPublicKey(privateKey: string) {
 
 // Implements the eth_decrypt function as described in
 // https://eips.ethereum.org/EIPS/eip-5630
-export function eth_decrypt(privateKey: string, encryptedMessage: Buffer) {
+export function eth_decrypt(
+  privateKey: string,
+  encryptedMessage: Buffer
+): Buffer {
   const secretDecryptionKey = getSecretDecryptionKey(privateKey);
   const decryptedMessage = decrypt(secretDecryptionKey, encryptedMessage);
-  return decryptedMessage.toString("utf-8");
+  return decryptedMessage;
 }

@@ -28,7 +28,10 @@ describe("eth_decrypt", function () {
     );
 
     // Decrypt the message via eth_decrypt
-    const decryptedMessage = eth_decrypt(privateKey, encryptedMessage);
+    const decryptedMessage = eth_decrypt(
+      privateKey,
+      encryptedMessage
+    ).toString();
 
     expect(decryptedMessage).to.be.equal("Hello Beautiful World!");
   });
