@@ -1,6 +1,6 @@
 {
   "name": "eip-5630",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "A sample implementation of EIP-5630",
   "scripts": {
